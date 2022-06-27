@@ -19,18 +19,25 @@ const postSchema = new Schema(
       type: Array,
       // default: undefined
     },
-    upVote: {
+    upvote: {
       type: Number,
       default: 0,
     },
 
-    downVote: {
+    downvote: {
       type: Number,
       default: 0,
     },
-    votedUser: {
-      type: Array,
-    },
+    votedUsers: [
+      {
+        userId: {
+          type: String,
+        },
+        voteType: {
+          type: String
+        }
+      }
+    ],
     creator: {
       type: Schema.Types.ObjectId,
       ref: 'User',

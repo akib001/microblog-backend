@@ -44,6 +44,8 @@ router.post('/post-comment', isAuth, feedController.postComment);
 
 router.delete('/post/:postId', isAuth, feedController.deletePost);
 
-router.post('/post/vote', isAuth, feedController.votePost);
+router.post('/post/upvote', isAuth, feedController.upvotePost);
+
+router.post('/post/downvote', isAuth, feedController.downvotePost);
 
 module.exports = router;

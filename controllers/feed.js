@@ -12,20 +12,20 @@ exports.getPosts = (req, res, next) => {
   let totalItems;
   Post.find()
     .countDocuments()
-    .then(count => {
+    .then((count) => {
       totalItems = count;
       return Post.find()
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
     })
-    .then(posts => {
+    .then((posts) => {
       res.status(200).json({
         message: 'Fetched posts successfully.',
         posts: posts,
-        totalItems: totalItems
+        totalItems: totalItems,
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
@@ -45,7 +45,7 @@ exports.createPost = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
-  const imageUrl = req.file.path.replace(/\\/g, "/");
+  const imageUrl = req.file.path.replace(/\\/g, '/');
   const title = req.body.title;
   const content = req.body.content;
   let creator;
@@ -53,26 +53,26 @@ exports.createPost = (req, res, next) => {
     title: title,
     content: content,
     imageUrl: imageUrl,
-    creator: req.userId
+    creator: req.userId,
   });
   post
     .save()
-    .then(result => {
+    .then((result) => {
       return User.findById(req.userId);
     })
-    .then(user => {
+    .then((user) => {
       creator = user;
       user.posts.push(post);
       return user.save();
     })
-    .then(result => {
+    .then((result) => {
       res.status(201).json({
         message: 'Post created successfully!',
         post: post,
-        creator: { _id: creator._id, name: creator.name }
+        creator: { _id: creator._id, name: creator.name },
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
@@ -83,7 +83,7 @@ exports.createPost = (req, res, next) => {
 exports.getPost = (req, res, next) => {
   const postId = req.params.postId;
   Post.findById(postId)
-    .then(post => {
+    .then((post) => {
       if (!post) {
         const error = new Error('Could not find post.');
         error.statusCode = 404;
@@ -91,7 +91,7 @@ exports.getPost = (req, res, next) => {
       }
       res.status(200).json({ message: 'Post fetched.', post: post });
     })
-    .catch(err => {
+    .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
@@ -122,7 +122,7 @@ exports.updatePost = (req, res, next) => {
   }
 
   Post.findById(postId)
-    .then(post => {
+    .then((post) => {
       if (!post) {
         const error = new Error('Could not find post.');
         error.statusCode = 404;
@@ -141,10 +141,10 @@ exports.updatePost = (req, res, next) => {
       post.content = content;
       return post.save();
     })
-    .then(result => {
+    .then((result) => {
       res.status(200).json({ message: 'Post updated!', post: result });
     })
-    .catch(err => {
+    .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
@@ -155,7 +155,7 @@ exports.updatePost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   const postId = req.params.postId;
   Post.findById(postId)
-    .then(post => {
+    .then((post) => {
       if (!post) {
         const error = new Error('Could not find post.');
         error.statusCode = 404;
@@ -170,24 +170,23 @@ exports.deletePost = (req, res, next) => {
       clearImage(post.imageUrl);
       return Post.findByIdAndRemove(postId);
     })
-    .then(result => {
+    .then((result) => {
       return User.findById(req.userId);
     })
-    .then(user => {
+    .then((user) => {
       user.posts.pull(postId);
       return user.save();
     })
-    .then(result => {
+    .then((result) => {
       res.status(200).json({ message: 'Deleted post.' });
     })
-    .catch(err => {
+    .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
     });
 };
-
 
 exports.postComment = (req, res, next) => {
   const errors = validationResult(req);
@@ -196,46 +195,46 @@ exports.postComment = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
- 
+
   const postId = req.body.postId;
   const comment = req.body.comment;
 
-  console.log(comment)
+  console.log(comment);
 
   Post.findById(postId)
-  .then(post => {
-    if (!post) {
-      const error = new Error('Could not find post.');
-      error.statusCode = 404;
-      throw error;
-    }
-    if (post.creator.toString() !== req.userId) {
-      const error = new Error('Not authorized!');
-      error.statusCode = 403;
-      throw error;
-    }
-    // if (imageUrl !== post.imageUrl) {
-    //   clearImage(post.imageUrl);
-    // }
-    post.comments.push(comment);
-    return post.save();
-  })
-  .then(result => {
-    res.status(200).json({ message: 'Comment Added!', post: result });
-  })
-  .catch(err => {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
-  });
+    .then((post) => {
+      if (!post) {
+        const error = new Error('Could not find post.');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Not authorized!');
+        error.statusCode = 403;
+        throw error;
+      }
+      // if (imageUrl !== post.imageUrl) {
+      //   clearImage(post.imageUrl);
+      // }
+      post.comments.push(comment);
+      return post.save();
+    })
+    .then((result) => {
+      res.status(200).json({ message: 'Comment Added!', post: result });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
-
-exports.votePost = async (req, res, next) => {
+exports.upvotePost = async (req, res, next) => {
   const postId = req.body.postId;
   const userId = req.userId;
   const errors = validationResult(req);
+  let voteResult;
 
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect.');
@@ -245,26 +244,202 @@ exports.votePost = async (req, res, next) => {
 
   try {
     const post = await Post.findById(postId);
-    if(!post) {
+    if (!post) {
       const error = new Error('Could not find post.');
       error.statusCode = 404;
       throw error;
     }
 
-    console.log(userId);
+    let votedUser;
 
+    post.votedUsers.forEach(element => {
+      if(element.userId === userId) {
+        votedUser = userId;
+        return;
+      } 
+      
+    });
 
-  } catch(err) {
+    // if user has a vote
+    if (votedUser) {
+      const downvoteExist = await Post.findOne({
+        votedUsers: { $elemMatch: { userId: userId, voteType: 'upvote' }},
+      }).select('votedUsers');
+
+      // if User Already has upvote
+      if (downvoteExist) {
+        // const error = new Error('User Already has up vote');
+        // error.statusCode = 422;
+        // throw error;
+
+        voteResult = await Post.findByIdAndUpdate(
+          postId,
+          { $pull: { votedUsers: { userId: userId, voteType: 'upvote'}}, $inc: { upvote: -1 }},
+          {new: true}
+        );
+        return res.status(200).json({ message: 'vote removed', voteResult, upvote: voteResult.upvote, downvote: voteResult.downvote, voteRemove: true});
+      } else {
+        // user has downvote. so we change votetype to upvote and increment upvote count and decrement downvote count
+        voteResult = await Post.findOneAndUpdate(
+          { votedUsers: { $elemMatch: { userId: userId } } },
+          { $set: { 'votedUsers.$.voteType': 'upvote' }, $inc: { upvote: 1, downvote: -1 }},
+          {new: true}
+        );
+      }
+    } else {
+      // user doesn't have a vote
+      voteResult = await Post.findByIdAndUpdate(
+        postId,
+        { $push: { votedUsers: { userId: userId, voteType: 'upvote'}}, $inc: { upvote: 1 }},
+        {new: true}
+      );
+    }
+     res.status(200).json({ message: 'vote updated', voteResult, upvote: voteResult.upvote, downvote: voteResult.downvote, voteRemove: false});
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
   }
+};
 
 
-}
+exports.downvotePost = async (req, res, next) => {
+  const postId = req.body.postId;
+  const userId = req.userId;
+  const errors = validationResult(req);
+  let voteResult;
 
-const clearImage = filePath => {
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed, entered data is incorrect.');
+    error.statusCode = 422;
+    throw error;
+  }
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new Error('Could not find post.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    let votedUser;
+
+    post.votedUsers.forEach(element => {
+      if(element.userId === userId) {
+        votedUser = userId;
+        return;
+      } 
+      
+    });
+
+    // if user has a vote
+    if (votedUser) {
+      const downvoteExist = await Post.findOne({
+        votedUsers: { $elemMatch: { userId: userId, voteType: 'downvote' }},
+      }).select('votedUsers');
+
+      // if User Already has upvote
+      if (downvoteExist) {
+        voteResult = await Post.findByIdAndUpdate(
+          postId,
+          { $pull: { votedUsers: { userId: userId, voteType: 'downvote'}}, $inc: { downvote: -1 }},
+          {new: true}
+        );
+        return res.status(200).json({ message: 'downvote removed', voteResult, upvote: voteResult.upvote, downvote: voteResult.downvote, voteRemove: true});
+      } else {
+        // user has upvote. so we change votetype to downvote and increment downvote count and decrement upvote count
+        voteResult = await Post.findOneAndUpdate(
+          { votedUsers: { $elemMatch: { userId: userId } } },
+          { $set: { 'votedUsers.$.voteType': 'downvote' }, $inc: { upvote: -1, downvote: 1 }},
+          {new: true}
+        );
+      }
+    } else {
+      // user doesn't have a vote
+      voteResult = await Post.findByIdAndUpdate(
+        postId,
+        { $push: { votedUsers: { userId: userId, voteType: 'downvote'}}, $inc: { downvote: 1 }},
+        {new: true}
+      );
+    }
+     res.status(200).json({ message: 'vote updated', voteResult, upvote: voteResult.upvote, downvote: voteResult.downvote, voteRemove: false});
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+
+// exports.downvotePost = async (req, res, next) => {
+//   const postId = req.body.postId;
+//   const userId = req.userId;
+//   const errors = validationResult(req);
+//   let voteResult;
+
+//   if (!errors.isEmpty()) {
+//     const error = new Error('Validation failed, entered data is incorrect.');
+//     error.statusCode = 422;
+//     throw error;
+//   }
+
+//   try {
+//     const post = await Post.findById(postId);
+//     if (!post) {
+//       const error = new Error('Could not find post.');
+//       error.statusCode = 404;
+//       throw error;
+//     }
+
+//     let votedUser;
+
+//     post.votedUsers.forEach(element => {
+//       if(element.userId === userId) {
+//         votedUser = userId;
+//         return;
+//       } 
+//     });
+
+//     // if user has a vote
+//     if (votedUser) {
+//       const downvoteExist = await Post.findOne({
+//         votedUsers: { $elemMatch: { userId: userId, voteType: 'downvote' } },
+//       }).select('votedUsers');
+
+//       // if User Already has downvote
+//       if (downvoteExist) {
+//         const error = new Error('User Already has downvote');
+//         error.statusCode = 422;
+//         throw error;
+//       } else {
+//         // user has upvote. so we change votetype to downvote and increment downvote count and decrement upvote count
+//         voteResult = await Post.findOneAndUpdate(
+//           { votedUsers: { $elemMatch: { userId: userId } } },
+//           { $set: { 'votedUsers.$.voteType': 'downvote' }, $inc: { upvote: -1, downvote: 1 }},
+//           {new: true}
+//         );
+//       }
+//     } else {
+//       // user doesn't have a vote
+//       voteResult = await Post.findByIdAndUpdate(
+//         postId,
+//         { $push: { votedUsers: { userId: userId, voteType: 'downvote'}}, $inc: { downvote: 1 }},
+//         {new: true}
+//       );
+//     }
+//     res.status(200).json({ message: 'vote updated', voteResult, upvote: voteResult.upvote, downvote: voteResult.downvote});
+//   } catch (err) {
+//     if (!err.statusCode) {
+//       err.statusCode = 500;
+//     }
+//     next(err);
+//   }
+// };
+
+const clearImage = (filePath) => {
   filePath = path.join(__dirname, '..', filePath);
-  fs.unlink(filePath, err => console.log(err));
+  fs.unlink(filePath, (err) => console.log(err));
 };
