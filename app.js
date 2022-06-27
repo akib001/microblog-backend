@@ -1,5 +1,5 @@
 const path = require('path');
-
+require("dotenv").config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -61,9 +61,9 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    'mongodb+srv://akib:GPiDA6MPl9ep71Hx@node-tutorial.ps5lz.mongodb.net/blog?retryWrites=true', { useNewUrlParser: true }
+    `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASS}@node-tutorial.ps5lz.mongodb.net/blog?retryWrites=true`, { useNewUrlParser: true }
   )
   .then(result => {
-    app.listen(8080);
+    app.listen(process.env.PORT || 8080);
   })
   .catch(err => console.log(err));
