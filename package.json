@@ -1,5 +1,5 @@
 {
-  "name": "nodejs-complete-guide",
+  "name": "microblog-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
